@@ -12,20 +12,23 @@ export default function App(){
   const [timer, setTimer] = useState(0);
   const intervalRef = useRef(null);
 
+  const [hasStarted, setHasStarted] = useState(false);
+
   const gameWon = dice.every(die => die.isHeld) && 
     dice.every(die => die.value === dice[0].value)
 
   useEffect(() => {
-    if (!gameWon) {
+    if (hasStarted && !gameWon) {
       intervalRef.current = setInterval(() => {
         setTimer((prev) => prev + 1);
       }, 1000)
-    } else {
+    } 
+    if (gameWon) {
       clearInterval(intervalRef.current);
     }
 
     return () => clearInterval(intervalRef.current);
-  }, [gameWon]);
+  }, [hasStarted, gameWon]);
 
   useEffect(() => {
     if (gameWon) {
@@ -42,6 +45,11 @@ export default function App(){
   }
 
   function rollDice() {
+
+    // if (!hasStarted) {
+    //   setHasStarted(true);
+    // }
+
     if (!gameWon) {
       setRollCount((prev) => prev + 1);
       setDice(oldDice => oldDice.map(die => 
@@ -53,10 +61,16 @@ export default function App(){
       setDice(generateAllNewDice());
       setRollCount(0);
       setTimer(0);
+      setHasStarted(false);
     }
   }
 
   function hold(id){
+
+    if (!hasStarted) {
+      setHasStarted(true);
+    }
+
     setDice(oldDice => oldDice.map(die =>
       die.id === id ?
         {...die, isHeld: !die.isHeld} :
@@ -85,8 +99,21 @@ export default function App(){
       </div>
 
       <div className="stats">
-        <p>Rolls: {rollCount}</p>
-        <p>Time: {timer}s</p>
+        <p>
+          <img
+            src="/roll.svg"
+            alt="Roller Icon"
+            className="roller-timer-icon"
+            />
+          Rolls: {rollCount}</p>
+        
+        <p>
+          <img 
+            src="/timer.svg"
+            alt="Timer Icon"
+            className="roller-timer-icon"
+          />
+        Time: {timer}s</p>
       </div>
 
       <h1 className="title">Tenzies</h1>

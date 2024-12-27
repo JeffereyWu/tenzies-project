@@ -17,7 +17,7 @@ body {
 div#root {
   height: 100%;
   width: 100%;
-  max-height: 400px;
+  max-height: 500px;
   max-width: 400px;
 }
 
@@ -96,7 +96,7 @@ button.roll-dice {
   align-items: center;
   width: 100%;
   max-width: 400px;
-  margin-bottom: 20px;
+  margin: 20px 0 20px;
   padding: 0 20px;
   color: #0B2434;
   font-weight: bold;
@@ -106,4 +106,14 @@ button.roll-dice {
 
 .stats p {
   margin: 0;
+}
+
+.roller-timer-icon {
+  width: 20px;
+  height: 20px;
+  display: "flex";
+  align-items: "center";
+  vertical-align: "middle";
+  margin-right: 4px;
+
 }
