@@ -10,35 +10,28 @@ export default function App(){
 
   const [rollCount, setRollCount] = useState(0);
   const [timer, setTimer] = useState(0);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const timerRef = useRef(null);
+  const intervalRef = useRef(null);
 
   const gameWon = dice.every(die => die.isHeld) && 
     dice.every(die => die.value === dice[0].value)
 
   useEffect(() => {
-    if (gameWon) {
-      clearInterval(timerRef.current);
-      buttonRef.current.focus();
-    } else if (!isTimerRunning) {
-      startTimer();
+    if (!gameWon) {
+      intervalRef.current = setInterval(() => {
+        setTimer((prev) => prev + 1);
+      }, 1000)
+    } else {
+      clearInterval(intervalRef.current);
     }
+
+    return () => clearInterval(intervalRef.current);
   }, [gameWon]);
 
-  function startTimer() {
-    setIsTimerRunning(true);
-    timerRef.current = setInterval(() => {
-      setTimer((prevTime) => prevTime + 1);
-    }, 1000);
-  }
-
-  function resetGame() {
-    setDice(generateAllNewDice());
-    setRollCount(0);
-    setTimer(0);
-    setIsTimerRunning(false);
-    clearInterval(timerRef.current)
-  }
+  useEffect(() => {
+    if (gameWon) {
+      buttonRef.current.focus();
+    }
+  }, [gameWon])
 
   function generateAllNewDice() {
     return new Array(10).fill(0).map(() => ({
@@ -50,14 +43,16 @@ export default function App(){
 
   function rollDice() {
     if (!gameWon) {
+      setRollCount((prev) => prev + 1);
       setDice(oldDice => oldDice.map(die => 
         die.isHeld ?
           die :
           {...die, value: Math.ceil(Math.random() * 6)}
       ));
-      setRollCount((prevCount) => prevCount + 1);
     } else {
-      resetGame();
+      setDice(generateAllNewDice());
+      setRollCount(0);
+      setTimer(0);
     }
   }
 
@@ -66,7 +61,7 @@ export default function App(){
       die.id === id ?
         {...die, isHeld: !die.isHeld} :
         die
-    ))
+    ));
   }
 
   const diceElements = dice.map(dieObj => 
@@ -88,13 +83,14 @@ export default function App(){
             </p>
             }
       </div>
-      <h1 className="title">Tenzies</h1>
-      <p className="instructions">Roll until all dice are the same. Click each die to freeze it at its current value between rolls.</p>
-      
+
       <div className="stats">
         <p>Rolls: {rollCount}</p>
         <p>Time: {timer}s</p>
       </div>
+
+      <h1 className="title">Tenzies</h1>
+      <p className="instructions">Roll until all dice are the same. Click each die to freeze it at its current value between rolls.</p>
       
       <div className="dice-container">
         {diceElements}
