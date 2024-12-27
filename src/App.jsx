@@ -8,14 +8,37 @@ export default function App(){
   const [dice, setDice] = useState(() => generateAllNewDice())
   const buttonRef = useRef(null)
 
+  const [rollCount, setRollCount] = useState(0);
+  const [timer, setTimer] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const timerRef = useRef(null);
+
   const gameWon = dice.every(die => die.isHeld) && 
     dice.every(die => die.value === dice[0].value)
 
   useEffect(() => {
     if (gameWon) {
-      buttonRef.current.focus()
+      clearInterval(timerRef.current);
+      buttonRef.current.focus();
+    } else if (!isTimerRunning) {
+      startTimer();
     }
-  }, [gameWon])
+  }, [gameWon]);
+
+  function startTimer() {
+    setIsTimerRunning(true);
+    timerRef.current = setInterval(() => {
+      setTimer((prevTime) => prevTime + 1);
+    }, 1000);
+  }
+
+  function resetGame() {
+    setDice(generateAllNewDice());
+    setRollCount(0);
+    setTimer(0);
+    setIsTimerRunning(false);
+    clearInterval(timerRef.current)
+  }
 
   function generateAllNewDice() {
     return new Array(10).fill(0).map(() => ({
@@ -31,9 +54,10 @@ export default function App(){
         die.isHeld ?
           die :
           {...die, value: Math.ceil(Math.random() * 6)}
-      ))
+      ));
+      setRollCount((prevCount) => prevCount + 1);
     } else {
-      setDice(generateAllNewDice())
+      resetGame();
     }
   }
 
@@ -58,13 +82,24 @@ export default function App(){
     <main>
       {gameWon && <Confetti />}
       <div aria-live="polite" className="sr-only">
-          {gameWon && <p>Congratulations! You won! Press "New Game" to start again.</p>}
+          {gameWon && 
+            <p>Congratulations! You won in {rollCount} rolls and {timer} seconds! 
+            Press "New Game" to start again.
+            </p>
+            }
       </div>
       <h1 className="title">Tenzies</h1>
       <p className="instructions">Roll until all dice are the same. Click each die to freeze it at its current value between rolls.</p>
+      
+      <div className="stats">
+        <p>Rolls: {rollCount}</p>
+        <p>Time: {timer}s</p>
+      </div>
+      
       <div className="dice-container">
         {diceElements}
       </div>
+
       <button ref={buttonRef} className="roll-dice" onClick={rollDice}>
         {gameWon ? "New Game" : "Roll"}
       </button>
